@@ -1,15 +1,15 @@
 module Lifestreamable
   module Lifestreamer
     @@stack=[]
-    def self.push(hash)
-      @@stack.push hash
+    def self.push(action, lifestream_struct)
+      @@stack.push [action, lifestream_struct]
       @@stack.uniq!
     end
     def self.generate_lifestream
-      while (hash=@@stack.shift)
+      while (lifestream_entry=@@stack.shift)
         begin
-          puts "LIFESTREAMER::GENERATE_LIFESTREAM  #{hash.inspect}"
-          Lifestream.create_model_lifestream hash
+          puts "LIFESTREAMER::GENERATE_LIFESTREAM  #{lifestream_entry.inspect}"
+          Lifestream.process(lifestream_entry[0], lifestream_entry[1])
         rescue Exception => e
           puts e.message, e.backtrace
           # PUT SOMETHING HERE!!!

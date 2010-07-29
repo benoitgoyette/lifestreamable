@@ -18,9 +18,6 @@ module Lifestreamable
     base.extend ClassMethods
   end
 
-  #Methode pour modifier le contenu du lifestream avant l'affichage
-  # toute classe qui veut filtrer le contenu peut le faire en
-  #surchargeant cette classe.
   module ClassMethods
     @@lifestream_options={}
   
@@ -30,14 +27,9 @@ module Lifestreamable
     
     def lifestreamable(options)
       include InstanceMethods
-      
-      options.to_options
-      options_on = [options[:on]].flatten
-      options_callback = options[:for]
-      options_filter = options[:filter]
-      options_order = options[:order] # either asc or desc
 
-      options_on.each do |option_on|
+      options.to_options
+      options[:on].each do |option_on|
         case option_on
           when :update
             Lifestreamable::UpdateObserver.instance.add_class_observer self.class_name.constantize
@@ -46,65 +38,19 @@ module Lifestreamable
           when :destroy
             Lifestreamable::DestroyObserver.instance.add_class_observer self.class_name.constantize
           else
-            raise Exception.new("option \"#{option_on}\" is not supported for Lifestream")
+            raise Exception.new("option \"#{option_on}\" is not supported for Lifestreamable")
         end
       end
-      
-      @@lifestream_options = {:for=>options[:for], :filter=>options[:filter], :order=>options[:order], :on=>options_on }
-
+      @@lifestream_options = {:data=>options[:data], :on=>options[:on], :type=>options[:type], :owner=>options[:owner], :when=>options[:when], :filter=>options[:filter]
+        :destroy_instead_of_update=>options[:destroy_instead_of_update], :create_instead_of_update=>options[:create_instead_of_update],
+        :create_instead_of_destroy=>options[:create_instead_of_destroy], :update_instead_of_destroy=>options[:update_instead_of_destroy]}
     end
+    
   end
   
   module InstanceMethods
     def lifestream_options
       self.class.lifestream_options
-    end
-    
-    def delete_instead_of_update?(type)
-      false
-    end
-
-    def insert_instead_of_update?(type)
-      false
-    end
-
-    def <=>(a)
-      # Ordre inverse!, on veut sorter a l'envers
-      if @@lifestream_options[:order] == :desc
-        a.created_at <=> self.created_at
-      else
-        self.created_at <=> a.created_at
-      end
-
-    end
-
-    def lifestream_data(type)
-      nil
-    end
-
-    def base_lifestream_data(type)
-      data = {
-        'stream_type' => type.to_s,
-        'object' => self
-      }
-      if self.respond_to?(:profil_id)
-        data.merge!('profil_id' => self.profil_id )
-      elsif self.respond_to?(:profil)
-        data.merge!('profil_id' => self.profil.id )
-      else
-        raise 'error, unable to find profil.id for lifestream in get_lifestream_data'
-      end
-      data
-    end
-
-    #Methode pour savoir dans quelle condition on doint entrer les donnees dans le lifestreams
-    # si la methode n'est pas surchargee, rien n'est entree dans le lifestream
-    def lifestreamable?
-      true
-    end
-
-    def lifestream_type
-      self.class.name.underscore.to_sym
     end
     
   end
