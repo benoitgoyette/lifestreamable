@@ -2,8 +2,8 @@ module Lifestreamable
   class CreateObserver < Lifestreamable::Observer
     observe :"lifestreamable/dummy"
     def after_create(model)
-      if lifestreamable?(model)
-        Lifestreamable::Lifestreamer.push :create, get_data(model)
+      if model.lifestreamable?
+        Lifestreamable::Lifestreamer.push model.get_action_instead_of(:create), model.get_payload
       end
     end
   end

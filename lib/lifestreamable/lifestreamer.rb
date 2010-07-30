@@ -8,11 +8,10 @@ module Lifestreamable
     def self.generate_lifestream
       while (lifestream_entry=@@stack.shift)
         begin
-          puts "LIFESTREAMER::GENERATE_LIFESTREAM  #{lifestream_entry.inspect}"
           Lifestream.process(lifestream_entry[0], lifestream_entry[1])
         rescue Exception => e
           puts e.message, e.backtrace
-          # PUT SOMETHING HERE!!!
+          # TODO PUT SOMETHING HERE!!!
         end
       end
     end

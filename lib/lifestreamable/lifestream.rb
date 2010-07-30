@@ -23,7 +23,6 @@ module Lifestreamable
       #
       def process(action, struct)
         # put explicitly the actions accepted
-        puts "PROCESSING LIFESTREAM #{struct.to_s}"
         case action
           when :create
             create hash_from_struct(struct)

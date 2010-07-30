@@ -12,7 +12,9 @@
 # #############################################################
 
 module Lifestreamable
-  puts "loading module lifestreamable"
+  Struct.new('LifestreamData', :reference_type, :reference_id, :owner_type, :owner_id, :stream_type, :object_data_hash)
+  TRUE_REGEX = /^[tT][rR][uU][eE]$/
+  FALSE_REGEX =  /^[fF][aA][lL][sS][eE]$/
   
   def self.included(base)
     base.extend ClassMethods
@@ -41,7 +43,7 @@ module Lifestreamable
             raise Exception.new("option \"#{option_on}\" is not supported for Lifestreamable")
         end
       end
-      @@lifestream_options = {:data=>options[:data], :on=>options[:on], :type=>options[:type], :owner=>options[:owner], :when=>options[:when], :filter=>options[:filter]
+      @@lifestream_options = {:data=>options[:data], :on=>options[:on], :type=>options[:type], :owner=>options[:owner], :when=>options[:when], :filter=>options[:filter],
         :destroy_instead_of_update=>options[:destroy_instead_of_update], :create_instead_of_update=>options[:create_instead_of_update],
         :create_instead_of_destroy=>options[:create_instead_of_destroy], :update_instead_of_destroy=>options[:update_instead_of_destroy]}
     end
@@ -52,7 +54,130 @@ module Lifestreamable
     def lifestream_options
       self.class.lifestream_options
     end
+
+    def lifestreamable?
+      case self.lifestream_options[:when]
+        when NilClass, TrueClass, :true, TRUE_REGEX
+          true
+        when FalseClass, :false, FALSE_REGEX
+          false
+        when Proc
+          self.lifestream_options[:when].call(self)
+        when String, Symbol
+          eval(self.lifestream_options[:when].to_s)
+      end 
+    end
     
+    def get_payload
+      reference_type, reference_id = get_reference
+      owner_type, owner_id = get_owner
+      stream_type = get_stream_type
+      data = get_lifestream_data.to_yaml
+      Struct::LifestreamData.new reference_type, reference_id, owner_type, owner_id, stream_type, data   
+    end
+    
+    def get_action_instead_of(action)
+      case action
+        when :create
+          :create
+        when :update
+          if test_instead_option(lifestream_options[:create_instead_of_update])
+            :create
+          elsif test_instead_option(lifestream_options[:destroy_instead_of_update]) 
+          :destroy 
+          else
+            :update
+          end
+        when :destroy
+          if test_instead_option(lifestream_options[:create_instead_of_destroy])
+            :create 
+          elsif test_instead_option(lifestream_options[:destroy_instead_of_destroy])
+            :update 
+          else  
+            :destroy
+          end
+        else
+          raise LifestreamableException.new("The action #{action.to_s} is not a valid type of action")
+      end
+    end
+
+    
+protected    
+    # if the option[:when] is not defined, then it's considered true
+    def get_reference
+      [self.class.name, self.id]
+    end
+
+    def get_owner
+      return_vals = case self.lifestream_options[:owner]
+        when Proc
+          self.lifestream_options[:owner].call(self)
+        when String, Symbol
+          puts ">>>>>>>>>>>> owner ?>>>>  #{self.lifestream_options[:owner].to_s}"
+          eval(self.lifestream_options[:owner].to_s)
+        else
+          raise LifestreamableException.new("The lifestreamable :owner option is invalid")
+      end 
+      
+      case return_vals
+        when NilClass
+          LifestreamableException.new("The lifestreamable :owner option Proc must return either an ActiveRecord::Base subclass or an array of [class_name, id]") 
+        when Array
+          if return_vals.length == 1
+            if return_vals.is_a?(ActiveRecord::Base)
+              return [return_vals.class.name, return_vals.id] 
+            else
+              LifestreamableException.new("The lifestreamable :owner option Proc evaluation returned only 1 value, but it's not an ActiveRecord::Base") 
+            end
+          else
+            return_vals[0,2]
+          end
+        when ActiveRecord::Base
+          return [return_vals.class.name, return_vals.id] 
+      end
+    end
+    
+    def get_stream_type
+      case self.lifestream_options[:type]
+        when NilClass
+          self.class.name.underscore
+        when Proc
+          self.lifestream_options[:type].call(self)
+        when String, Symbol
+          if self.respond_to?(self.lifestream_options[:type].to_s)
+            eval(self.lifestream_options[:type].to_s)
+          else
+            self.lifestream_options[:type].to_s
+          end
+        else
+          raise LifestreamableException.new("The lifestreamable :type option is invalid")
+      end 
+    end
+    
+    def get_lifestream_data
+      case self.lifestream_options[:data]
+        when Proc
+          self.lifestream_options[:data].call(self)
+        when String, Symbol
+          eval(self.lifestream_options[:data].to_s)
+        else
+          raise LifestreamableException.new("The lifestreamable :data option is invalid")
+      end 
+    end
+    
+private
+    def test_instead_option(option)
+      case option
+        when NilClass, FalseClass, :false, FALSE_REGEX
+          false
+        when TrueClass, :true, TRUE_REGEX
+          true
+        when Proc
+          option.call(self)
+        when String, Symbol
+          eval(option.to_s)
+      end == true  # make sure we return true/false
+    end
   end
 end
 

@@ -2,7 +2,6 @@ class LifestreamableMigrationGenerator < Rails::Generator::Base
   default_options :skip_migration => false
   
   def manifest
-    puts "LIFESTREAMABLE GENERATOR"
     record do |m|
       unless options[:skip_migration]
         m.migration_template "migration.rb", 'db/migrate', :migration_file_name => "create_lifestreams"
