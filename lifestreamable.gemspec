@@ -7,8 +7,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Benoit Goyette"]
   s.date = %q{2010-05-19}
-  s.description = %q{Lifestreamable }
-  s.email = %q{hotwheels@pheromone.ca}
+  s.description = %q{library to perform social network like lifetstream functions, this is the code used on the social network http://legrandclub.rds.ca}
+  s.email = %q{benoit.goyette@gmail.com}
   s.files = ["History.txt",
     "Manifest.txt",
     "PostInstall.txt",
@@ -16,13 +16,14 @@ Gem::Specification.new do |s|
     "Rakefile",
     "generators/lifestreamable_migration/lifestreamable_migration_generator.rb",
     "generators/lifestreamable_migration/templates/migration.rb",
-    "lib/lifestreamable/lifestream.rb",
-    "lib/lifestreamable/observer.rb",
     "lib/lifestreamable/create_observer.rb",
     "lib/lifestreamable/destroy_observer.rb",
-    "lib/lifestreamable/update_observer.rb",
+    "lib/lifestreamable/lifestream.rb",
     "lib/lifestreamable/lifestreamable.rb",
+    "lib/lifestreamable/lifestreamed.rb",
     "lib/lifestreamable/lifestreamer.rb",
+    "lib/lifestreamable/observer.rb",
+    "lib/lifestreamable/update_observer.rb",
     "lib/lifestreamable.rb",
     "lifestreamable.gemspec",
     "script/console",
