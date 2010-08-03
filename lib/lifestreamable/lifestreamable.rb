@@ -1,6 +1,3 @@
-
-# #############################################################
-# #############################################################
 # Pour le lifestream, on ajoute une methode a ActiveRecord::Base
 # pour savoir si on doit effacer une entree du lifestream a la
 # place de faire un update.
@@ -8,8 +5,6 @@
 # la valeur, on veut effacer l'entree dans le lifestream.
 # Meme chose pour l'insert, si on change le youtube user name,
 # on veut que ca insere une nouvelle rangee dans le lifestream.
-# #############################################################
-# #############################################################
 
 module Lifestreamable
   Struct.new('LifestreamData', :reference_type, :reference_id, :owner_type, :owner_id, :stream_type, :object_data_hash)
@@ -17,10 +12,10 @@ module Lifestreamable
   FALSE_REGEX =  /^[fF][aA][lL][sS][eE]$/
   
   def self.included(base)
-    base.extend ClassMethods
+    base.extend LifestreamableClassMethods
   end
 
-  module ClassMethods
+  module LifestreamableClassMethods
     @@lifestream_options={}
   
     def lifestream_options
@@ -28,7 +23,7 @@ module Lifestreamable
     end
     
     def lifestreamable(options)
-      include InstanceMethods
+      include LifestreamableInstanceMethods
 
       options.to_options
       options[:on].each do |option_on|
@@ -48,9 +43,23 @@ module Lifestreamable
         :create_instead_of_destroy=>options[:create_instead_of_destroy], :update_instead_of_destroy=>options[:update_instead_of_destroy]}
     end
     
+    def filter(lifestream)
+      puts "in lifestreamable.filter"
+      option = self.lifestream_options[:filter]
+      lifestream = case option
+        when Proc
+          option.call(self, lifestream)
+        when String, Symbol
+          send(option.to_s, lifestream) if respond_to?(option.to_s)
+        else
+          lifestream
+      end 
+      lifestream
+    end
+
   end
-  
-  module InstanceMethods
+
+  module LifestreamableInstanceMethods
     def lifestream_options
       self.class.lifestream_options
     end
@@ -64,7 +73,7 @@ module Lifestreamable
         when Proc
           self.lifestream_options[:when].call(self)
         when String, Symbol
-          eval(self.lifestream_options[:when].to_s)
+          send(self.lifestream_options[:when].to_s)
       end 
     end
     
@@ -101,7 +110,6 @@ module Lifestreamable
       end
     end
 
-    
 protected    
     # if the option[:when] is not defined, then it's considered true
     def get_reference
@@ -113,8 +121,7 @@ protected
         when Proc
           self.lifestream_options[:owner].call(self)
         when String, Symbol
-          puts ">>>>>>>>>>>> owner ?>>>>  #{self.lifestream_options[:owner].to_s}"
-          eval(self.lifestream_options[:owner].to_s)
+          send(self.lifestream_options[:owner].to_s)
         else
           raise LifestreamableException.new("The lifestreamable :owner option is invalid")
       end 
@@ -145,7 +152,7 @@ protected
           self.lifestream_options[:type].call(self)
         when String, Symbol
           if self.respond_to?(self.lifestream_options[:type].to_s)
-            eval(self.lifestream_options[:type].to_s)
+            send(self.lifestream_options[:type].to_s)
           else
             self.lifestream_options[:type].to_s
           end
@@ -159,7 +166,7 @@ protected
         when Proc
           self.lifestream_options[:data].call(self)
         when String, Symbol
-          eval(self.lifestream_options[:data].to_s)
+          send(self.lifestream_options[:data].to_s)
         else
           raise LifestreamableException.new("The lifestreamable :data option is invalid")
       end 
@@ -175,7 +182,7 @@ private
         when Proc
           option.call(self)
         when String, Symbol
-          eval(option.to_s)
+          send(option.to_s)
       end == true  # make sure we return true/false
     end
   end
