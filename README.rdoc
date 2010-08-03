@@ -1,32 +1,87 @@
 = lifestreamable
 
-* http://github.com/#{github_username}/#{project_name}
+* github.com/benoitgoyette/lifestreamable
 
 == DESCRIPTION:
 
-FIX (describe your package)
+Lifestreamable is a rails gem that allows social network life lifestream operations. A lifestream is a series of events that occured and that are related to an owner.
+It has been designed to collect data upfront in model observers to minimize the number of request done at display time. the goal being that if the lifestream dislays several types of data over several different models, then only a single query will be run to get all the data to display instead of querying all data for each model. this radiaclly cuts down on display time.
+This is a port to a gem of the lifestream libraries that have been designed for the sports social network legrandclub.rds.ca
 
 == FEATURES/PROBLEMS:
 
-* FIX (list of features or problems)
+TODO:
+add support for pagination.
+add support for delayed jobs.
+port to rails 3.0
+write the tests
+complete the doc on which options are available for lifestreamable and lifestreamed
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+Ths lifestream modules is made up of 2 mixins, the lifestreamable, and lifestreamed modules.
+The lifestreamed module is included for models that own events, while the lifestreamable module is included on each model that triggers the event.
+
+for example, a user can write posts and comments, we want to report in the user's lifestream that the user has written posts and comments.
+
+
+defining the owner class
+    class User < ActiveRecord::Base
+        lifestreamed 
+    end
+
+defining the event classes
+    class Post < ActiveRecord::Base
+        belongs_to :user
+        has_many :comments
+        lifestreamable :on=>[:create, :update, :destroy], data=>:get_data, :owner=>:user
+    
+        def get_data   # this method must return a data structure that is serializable by YAML
+            {
+                :user=>{:firstname=>self.user.firstname, :lastname=>self.user.lastname},
+                :post=>{:title=>self.title}
+            }
+        end
+    end
+
+    class Comment < ActiveRecord::Base
+        belongs_to :user
+        belongs_to :post
+        # another way to get the data is through a Proc
+        lifestreamable :on=>[:create, :update, :destroy], :owner=>:user, data=> lambda {|model| 
+                    {
+                        :user=>{:firstname=>model.user.firstname, :lastname=>model.user.lastname},
+                        :post=>{:title=>model.post.title},
+                        :comment=>{:body=>model.body}
+                    }
+                }
+    end
+
+get the lifestream from the owner
+    user=User.first
+
+    # get the lifestream for the user
+    lifestream = user.lifestream  #=> returns an array of Lifestreamable::Lifesteam instances
+    
+    #get the data that was stored 
+    data = lifestream.first.object_data
+    
+    
 
 == REQUIREMENTS:
 
-* FIX (list of requirements)
+* YAML
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+* sudo gem install lifestreamable
+
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2010 FIXME full name
+Copyright (c) 2010 Benoit Goyette
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
