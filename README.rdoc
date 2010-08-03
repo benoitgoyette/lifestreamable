@@ -11,11 +11,13 @@ This is a port to a gem of the lifestream libraries that have been designed for 
 == FEATURES/PROBLEMS:
 
 TODO:
-add support for pagination.
-add support for delayed jobs.
-port to rails 3.0
-write the tests
-complete the doc on which options are available for lifestreamable and lifestreamed
+* add support for pagination.
+* add support for delayed jobs.
+* add support for memcached
+* port to rails 3.0
+* write the tests
+* complete the doc on which options are available for lifestreamable and lifestreamed
+* make sure that syntax like user.posts << Post.create(...) triggers the observers correctly.
 
 == SYNOPSIS:
 
@@ -57,7 +59,7 @@ defining the event classes
                 }
     end
 
-get the lifestream from the owner
+When ever a new post is created, it will create a new entry in the lifestream model. To get the lifestream from the owner:
     user=User.first
 
     # get the lifestream for the user
@@ -75,6 +77,7 @@ get the lifestream from the owner
 == INSTALL:
 
 * sudo gem install lifestreamable
+
 
 
 == LICENSE:
