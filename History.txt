@@ -2,3 +2,7 @@
 
 * 1 major enhancement:
   * Initial release
+
+=== 0.0.1 2010-05-19
+* 1 documentation:
+  * added a lot of documentation to Readme.rdoc and lib/lifestreamable/lifestreamable.rb

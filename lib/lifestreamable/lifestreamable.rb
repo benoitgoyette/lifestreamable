@@ -1,7 +1,68 @@
-# :title: module Lifestreamable
+# :title: Lifestreamable
+# == DESCRIPTION:
+# 
+# Lifestreamable is a rails gem that allows social network life lifestream operations. A lifestream is a series of events that occured and that are related to an owner.
+# It has been designed to collect data upfront in model observers to minimize the number of request done at display time. the goal being that if the lifestream dislays several types of data over several different models, then only a single query will be run to get all the data to display instead of querying all data for each model. this radiaclly cuts down on display time.
+# This is a port to a gem of the lifestream libraries that have been designed for the sports social network legrandclub.rds.ca
+# 
+# == INSTALLATION:
+# * gem install lifestreamable
+# * script/generate lifestreamable_migration
+#
+# == SYNOPSIS:
+# 
+# Ths lifestream modules is made up of 2 mixins, the lifestreamable, and lifestreamed modules.
+# The lifestreamed module is included for models that own events, while the lifestreamable module is included on each model that triggers the event.
+# 
+# for example, a user can write posts and comments, we want to report in the user's lifestream that the user has written posts and comments.
+# 
+# defining the owner class
+#     class User < ActiveRecord::Base
+#         lifestreamed :order=>'id asc'     # <= overrides the normal order which is 'id desc'
+#     end
+# 
+# defining the event classes
+#     class Post < ActiveRecord::Base
+#         belongs_to :user
+#         has_many :comments
+#         lifestreamable :on=>[:create, :update, :destroy], data=>:get_data, :owner=>:user
+#     
+#         def get_data   # this method must return a data structure that is serializable by YAML
+#             {
+#                 :user=>{:firstname=>self.user.firstname, :lastname=>self.user.lastname},
+#                 :post=>{:title=>self.title}
+#             }
+#         end
+#     end
+# 
+#     class Comment < ActiveRecord::Base
+#         belongs_to :user
+#         belongs_to :post
+#         # another way to get the data is through a Proc
+#         lifestreamable :on=>[:create, :update, :destroy], :owner=>:user, data=> lambda {|model| 
+#                     {
+#                         :user=>{:firstname=>model.user.firstname, :lastname=>model.user.lastname},
+#                         :post=>{:title=>model.post.title},
+#                         :comment=>{:body=>model.body}
+#                     }
+#                 }
+#     end
+# 
+# Whenever a new post is created, it will create a new entry in the lifestream model. To get the lifestream from the owner:
+#     user=User.first
+# 
+#     # get the lifestream for the user
+#     lifestream = user.lifestream  #=> returns an array of Lifestreamable::Lifesteam model instances
+#     
+#     #get the data that was stored 
+#     data = lifestream.first.object_data
+#     
+# 
+# == module Lifestreamable 
+#
 # module for models that trigger lifestream events.
 #
-# Usage:
+# == Usage:
 #   class Post < ActiveRecord::Base
 #     belongs_to :user
 #     lifestreamable :on=>[:create, :update, :destroy], :data=>:get_data, :owner=>:user
@@ -11,15 +72,14 @@
 #     end
 #   end
 #
-# Options
+# == Options
 # Note, when using Proc for the options, the model that triggers the event is always passed to the Proc.
 # ex. Proc.new {|model| ... }
 # 
 # *  :data => Required,  Proc or function name to call to get the data that needs to be lifestreamed, the data should be in a type that is serializable by YAML (Hash, Array and Struct are good)
 # *  :on => Required, Array of events that trigger the insertion into the lifestream, acceptable values are: :create, :update, :destroy 
 # *  :owner => Required, a String, Symbol, Proc or function name that returns the name of the owner of this event, i.e. the user that triggered the event.
-# *  :type => An identifier that represent the type of lifestream that is generated. this is useful when displaying the lifestream to select the view that will be used to display the lifestream event.
-#             Can be a String, Symbol, Proc or function name.
+# *  :type => An identifier that represent the type of lifestream that is generated. this is useful when displaying the lifestream to select the view that will be used to display the lifestream event. Can be a String, Symbol, Proc or function name.
 # *  :when => An identifier that specifies if the event should be logged. Can be true, false, a Proc or a function name. A method receives the action that triggers the event. the Proc receives the model and the event. Useful in combination with the :on=>[:update] option, we will want to update the lifestream if only a specific field is modified, but not the others.
 #         :when=>Proc.new {|model, action| if action == :update ...  }
 #         :when=>:when_function
@@ -33,7 +93,7 @@
 # *  :update_instead_of_destroy => Specifies if a the last entry should be updated in the lifestream when a :destroy event is triggered. can be true, false, a Proc or a function name.
 #
 #
-# Usage with all options
+# == Usage with all options
 #   class Post < ActiveRecord::Base
 #     belongs_to :user
 #     lifestreamable :on=>[:create, :update, :destroy], 
@@ -73,7 +133,8 @@
 #
 #   end
 #
-# WARNING, the insertion into the lifestream is done as an after filter in the controller. when debigging in the console, you may want to generate the lifestream, in this case, call Lifestreamable::Lifestreamer.generate_lifestream
+# == NOTICE
+# the insertion into the lifestream is done as an after filter in the controller. when debigging in the console, you may want to generate the lifestream, in this case, call Lifestreamable::Lifestreamer.generate_lifestream
 
 module Lifestreamable
   Struct.new('LifestreamData', :reference_type, :reference_id, :owner_type, :owner_id, :stream_type, :object_data_hash)

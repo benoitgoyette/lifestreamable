@@ -78,6 +78,7 @@ see the module Lifestreamable for all the details.
 == INSTALL:
 
 * sudo gem install lifestreamable
+* script/generate lifestreamable_migration
 
 == LICENSE:
 
