@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{lifestreamable}
-  s.version = "0.0.2"
+  s.version = "0.0.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Benoit Goyette"]
@@ -11,7 +11,6 @@ Gem::Specification.new do |s|
   s.email = %q{benoit.goyette@gmail.com}
   s.files = ["History.txt",
     "Manifest.txt",
-    "PostInstall.txt",
     "README.rdoc",
     "Rakefile",
     "generators/lifestreamable_migration/lifestreamable_migration_generator.rb",
@@ -31,8 +30,8 @@ Gem::Specification.new do |s|
     "script/generate",
     "test/test_helper.rb",
     "test/test_lifestreamable.rb"]
-  s.homepage = %q{http://lab.pheromone.ca}
-  s.rdoc_options = ["--exclude", "."]
+  s.homepage = %q{http://github.com/benoitgoyette/lifestreamable}
+  s.rdoc_options = ['--include', 'README.rdoc', '--main', 'README.rdoc']
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{lifestreamable}
   s.rubygems_version = %q{1.3.1}

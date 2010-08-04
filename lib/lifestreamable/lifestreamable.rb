@@ -74,7 +74,7 @@
 #
 # == Options
 # Note, when using Proc for the options, the model that triggers the event is always passed to the Proc.
-# ex. Proc.new {|model| ... }
+#   ex. Proc.new {|model| ... }
 # 
 # *  :data => Required,  Proc or function name to call to get the data that needs to be lifestreamed, the data should be in a type that is serializable by YAML (Hash, Array and Struct are good)
 # *  :on => Required, Array of events that trigger the insertion into the lifestream, acceptable values are: :create, :update, :destroy 

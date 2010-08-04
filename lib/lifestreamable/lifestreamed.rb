@@ -1,3 +1,32 @@
+# :title: module Lifestreamable::Lifestreamed
+#
+# == OPTIONS:
+# :order => Order in which the data is presented, by default, this is 'id desc', possible values are: true, false, Proc, function name. Proc receives the model as a parameter.
+# :filter => boolean value, specifies whether or not to filter the data, possible values are: true, false, Proc, function name. Proc receives the model as a parameter.
+#
+# == USAGE:
+# The lifestreamed module is included for models that own events, while the lifestreamable module is included on each model that triggers the event.
+#     class User < ActiveRecord::Base
+#         has_many :friends
+#         lifestreamed :order=>'id asc', :filter=>true
+#     end
+# 
+# Whenever a new post is created, it will create a new entry in the lifestream model. To get the lifestream from the owner:
+#     user=User.first
+# 
+#     # get the lifestream for the user
+#     lifestream = user.lifestream({find_options})  #=> returns an array of Lifestreamable::Lifesteam model instances
+#     group_lifestream = user.group_lifestream([array_of owner_id], {find_options})  #=> returns an array of Lifestreamable::Lifesteam model instances
+#     
+#     #get the data that was stored 
+#     data = lifestream.first.object_data
+#
+# The :option and :filter options can also be passed to the lifestream finder methods.
+#     group_friends = user.friends.collect {|f| f.id}
+#     lifestream = user.group_lifestream(group_friends, :filter=>false, :order=>'owner_type asc, owner_id desc')
+#     
+#
+
 module Lifestreamable
   module Lifestreamed
     def self.included(base)
@@ -23,6 +52,7 @@ module Lifestreamable
         self.class.lifestreamed_options
       end
       
+      # Returns the lifestream values on the 
       def lifestream(*options)
         opt, do_filter = get_options_and_filter(options[0])
         lifestream = Lifestreamable::Lifestream.find_lifestream_for_owner(self, opt) 
