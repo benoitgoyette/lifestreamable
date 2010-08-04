@@ -29,7 +29,7 @@ for example, a user can write posts and comments, we want to report in the user'
 
 defining the owner class
     class User < ActiveRecord::Base
-        lifestreamed 
+        lifestreamed :order=>'id asc'     # <= overrides the normal order which is 'id desc'
     end
 
 defining the event classes
@@ -59,16 +59,16 @@ defining the event classes
                 }
     end
 
-When ever a new post is created, it will create a new entry in the lifestream model. To get the lifestream from the owner:
+Whenever a new post is created, it will create a new entry in the lifestream model. To get the lifestream from the owner:
     user=User.first
 
     # get the lifestream for the user
-    lifestream = user.lifestream  #=> returns an array of Lifestreamable::Lifesteam instances
+    lifestream = user.lifestream  #=> returns an array of Lifestreamable::Lifesteam model instances
     
     #get the data that was stored 
     data = lifestream.first.object_data
     
-    
+see the module Lifestreamable for all the details.  
 
 == REQUIREMENTS:
 

@@ -15,6 +15,3 @@ module Lifestreamable
   end
   
 end
-
-class LifestreamableException < Exception 
-end

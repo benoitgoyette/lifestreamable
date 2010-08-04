@@ -18,6 +18,7 @@ module Lifestreamable
       #
       def process(action, struct)
         # put explicitly the actions accepted
+        puts "calling process #{action} #{struct.inspect}"
         case action
           when :create
             create get_payload(struct)

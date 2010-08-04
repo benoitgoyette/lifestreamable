@@ -47,7 +47,6 @@ module Lifestreamable
       end
 
       def get_filter_option(option)
-        puts "getting filter option"
         case option
           when NilClass, FalseClass, :false, Lifestreamable::FALSE_REGEX
             false

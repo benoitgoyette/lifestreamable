@@ -2,12 +2,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{lifestreamable}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Benoit Goyette"]
-  s.date = %q{2010-05-19}
-  s.description = %q{library to perform social network like lifetstream functions, this is the code used on the social network http://legrandclub.rds.ca}
+  s.date = %q{2010-08-04}
+  s.description = %q{library to perform social network like lifestream functions, this is the code used on the social network http://legrandclub.rds.ca}
   s.email = %q{benoit.goyette@gmail.com}
   s.files = ["History.txt",
     "Manifest.txt",

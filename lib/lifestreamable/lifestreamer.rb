@@ -1,3 +1,10 @@
+# :title: module Lifestreamable::Lifestreamer
+# module that generates the lifestream. this is done as an after_filter that is added to ActionController::Base.
+# Hence any action that is called in the controller will call this function afterwards. 
+# The Lifestreamable::Lifestreamer.generate_lifestream has a very small footprint when it has nothign to do. 
+#
+# TODO, include support for delayed_jobs to do it asynchronously
+
 module Lifestreamable
   module Lifestreamer
     @@stack=[]
